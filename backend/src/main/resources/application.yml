@@ -1,0 +1,19 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: ocean-duty-monitor
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:data/ocean-duty.db
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+logging:
+  level:
+    cn.nmefc: INFO

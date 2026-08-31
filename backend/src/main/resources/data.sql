@@ -1,0 +1,6 @@
+INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '国家海洋预报中心门户网站','https://www.nmefc.cn/','门户网站','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_name='国家海洋预报中心门户网站');
+INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '中国海洋预报网','https://www.nmefc.cn/','预报网站','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_name='中国海洋预报网');
+INSERT INTO monitor_module (site_id,module_name,module_url,expected_time,status) SELECT 1,'台风海浪警报','https://www.nmefc.cn/zhyj/hljb/tfhljb','08:00','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_module WHERE module_name='台风海浪警报');
+INSERT INTO monitor_module (site_id,module_name,module_url,expected_time,status) SELECT 1,'温带海浪警报','https://www.nmefc.cn/zhyj/hljb/wdhljb','08:00','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_module WHERE module_name='温带海浪警报');
+INSERT INTO monitor_module (site_id,module_name,module_url,expected_time,status) SELECT 1,'台风风暴潮警报','https://www.nmefc.cn/zhyj/fbcjb/tffbcjb','08:00','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_module WHERE module_name='台风风暴潮警报');
+INSERT INTO monitor_module (site_id,module_name,module_url,expected_time,status) SELECT 1,'海冰警报','https://www.nmefc.cn/zhyj/hbjb','08:00','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_module WHERE module_name='海冰警报');
