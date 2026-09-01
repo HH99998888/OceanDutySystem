@@ -1,6 +1,7 @@
 -- 初始监控站点配置。重复启动时按 URL 去重。
 INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '中国海洋预报网','https://www.oceanguide.org.cn/IndexHome','预报网站','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.oceanguide.org.cn/IndexHome');
 INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '国家海洋预报中心门户网站','https://www.nmefc.cn/','门户网站','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.nmefc.cn/');
+INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '海洋灾害子场景','https://www.nmefc.cn/zhyj','灾害业务','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.nmefc.cn/zhyj');
 INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT 'NEARGOOS网站','https://neargoos.nmefc.cn/#/index','业务网站','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://neargoos.nmefc.cn/#/index');
 INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT 'MaCOM网站','https://macom.oceanguide.org.cn/','业务网站','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://macom.oceanguide.org.cn/');
 
