@@ -19,3 +19,5 @@ docker compose up --build
 ## 灾害预警 MySQL（可选）
 
 `cms_forecast_alarm` 使用独立只读连接。复制 `.env.example` 并在服务器的密钥管理服务、Docker Secret 或进程环境中设置 `OCEAN_ALARM_DB_*`；真实 IP、账号和密码不得写入仓库。接口 `GET /api/alarm-database/latest` 按 `type` 返回每类最新的 `alarm_date`、`title` 和 `code`。
+
+默认类型映射为：`wave`（海浪）、`storm`（风暴潮）、`bore`（海啸）、`ice`（海冰）。

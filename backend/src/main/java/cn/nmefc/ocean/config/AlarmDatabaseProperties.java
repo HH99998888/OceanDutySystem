@@ -15,5 +15,5 @@ public class AlarmDatabaseProperties {
     private String password;
     /** type 与页面展示名称的映射；实际库有新增类型时可在配置中心扩展。 */
     private Map<String, String> typeNames = new LinkedHashMap<>(Map.of(
-            "wave", "海浪警报", "storm", "风暴潮警报", "tsunami", "海啸消息/警报", "ice", "海冰警报"));
+            "wave", "海浪警报", "storm", "风暴潮警报", "bore", "海啸消息/警报", "ice", "海冰警报"));
 }
