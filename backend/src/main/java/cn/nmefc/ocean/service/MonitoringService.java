@@ -28,6 +28,8 @@ import java.util.regex.Pattern;
 public class MonitoringService {
     private final SiteMapper siteMapper; private final ModuleMapper moduleMapper; private final MonitorRecordMapper recordMapper;
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+    /** 目标站点会拦截无浏览器标识的探测请求，统一使用固定、可审计的值班探测标识。 */
+    private static final String MONITOR_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36";
     /** 兼容中心网站常见的“更新时间”“最后更新时间”“发布时间”文本格式。 */
     private static final Pattern UPDATE_TIME_PATTERN = Pattern.compile("(?:最后更新(?:时间)?|更新时间|发布(?:时间)?)[\\s：:]*" +
             "(20\\d{2}[年./-]\\d{1,2}[月./-]\\d{1,2}日?(?:\\s+\\d{1,2}:\\d{2}(?::\\d{2})?)?)");
@@ -35,7 +37,7 @@ public class MonitoringService {
     public void checkSite(MonitorSite site) {
         long started = System.currentTimeMillis();
         try {
-            HttpResponse<Void> response = client.send(HttpRequest.newBuilder(URI.create(site.getSiteUrl())).timeout(Duration.ofSeconds(20)).GET().build(), HttpResponse.BodyHandlers.discarding());
+            HttpResponse<Void> response = client.send(HttpRequest.newBuilder(URI.create(site.getSiteUrl())).timeout(Duration.ofSeconds(20)).header("User-Agent", MONITOR_USER_AGENT).header("Accept", "text/html,application/xhtml+xml").GET().build(), HttpResponse.BodyHandlers.discarding());
             site.setResponseTime(System.currentTimeMillis() - started); site.setStatus(response.statusCode() < 400 ? Status.NORMAL : Status.ABNORMAL);
             site.setErrorMessage(response.statusCode() < 400 ? null : "HTTP " + response.statusCode());
         } catch (Exception e) { site.setStatus(Status.ABNORMAL); site.setResponseTime(System.currentTimeMillis() - started); site.setErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage()); log.warn("站点探测失败: {}", site.getSiteName(), e); }
@@ -55,7 +57,7 @@ public class MonitoringService {
             moduleMapper.updateById(module); record.setStatus(module.getStatus()); record.setDetail(module.getRemark()); recordMapper.insert(record); return;
         }
         try {
-            Connection.Response response = Jsoup.connect(module.getModuleUrl()).timeout(20_000).ignoreHttpErrors(true).execute();
+            Connection.Response response = Jsoup.connect(module.getModuleUrl()).userAgent(MONITOR_USER_AGENT).timeout(20_000).ignoreHttpErrors(true).execute();
             if (response.statusCode() < 400) {
                 String updateTime = findUpdateTime(response.parse());
                 module.setUpdateTime(updateTime);

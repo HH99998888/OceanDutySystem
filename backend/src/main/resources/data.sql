@@ -17,6 +17,9 @@ UPDATE monitor_module SET module_name = CASE module_url
   WHEN 'https://www.nmefc.cn/zhyj/hx' THEN '海啸消息/警报'
   ELSE module_name END
 WHERE module_url IN ('https://www.nmefc.cn/zhyj/hljb/tfhljb','https://www.nmefc.cn/zhyj/hljb/wdhljb','https://www.nmefc.cn/zhyj/fbcjb/tffbcjb','https://www.nmefc.cn/zhyj/fbcjb/wdfbcjb','https://www.nmefc.cn/zhyj/hbjb','https://www.nmefc.cn/zhyj/hx');
+-- IndexHome 是中国海洋预报网的唯一值班入口；清理旧的 SeaPrediction 重复配置。
+DELETE FROM monitor_site WHERE site_url='https://www.oceanguide.org.cn/SeaPrediction' AND EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.oceanguide.org.cn/IndexHome');
+UPDATE monitor_site SET site_url='https://www.oceanguide.org.cn/IndexHome', site_name='中国海洋预报网', site_type='预报网站' WHERE site_url='https://www.oceanguide.org.cn/SeaPrediction' AND NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.oceanguide.org.cn/IndexHome');
 INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '中国海洋预报网','https://www.oceanguide.org.cn/IndexHome','预报网站','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.oceanguide.org.cn/IndexHome');
 INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '国家海洋预报中心门户网站','https://www.nmefc.cn/','门户网站','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.nmefc.cn/');
 INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '海洋灾害子场景','https://www.nmefc.cn/zhyj','灾害业务','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.nmefc.cn/zhyj');
