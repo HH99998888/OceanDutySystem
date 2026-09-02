@@ -1,4 +1,22 @@
 -- 初始监控站点配置。重复启动时按 URL 去重。
+-- 修复早期版本可能以非 UTF-8 资源写入的预置名称；仅影响这些固定 URL。
+UPDATE monitor_site SET site_name = CASE site_url
+  WHEN 'https://www.oceanguide.org.cn/IndexHome' THEN '中国海洋预报网'
+  WHEN 'https://www.nmefc.cn/' THEN '国家海洋预报中心门户网站'
+  WHEN 'https://www.nmefc.cn/zhyj' THEN '海洋灾害子场景'
+  WHEN 'https://neargoos.nmefc.cn/#/index' THEN 'NEARGOOS网站'
+  WHEN 'https://macom.oceanguide.org.cn/' THEN 'MaCOM网站'
+  ELSE site_name END
+WHERE site_url IN ('https://www.oceanguide.org.cn/IndexHome','https://www.nmefc.cn/','https://www.nmefc.cn/zhyj','https://neargoos.nmefc.cn/#/index','https://macom.oceanguide.org.cn/');
+UPDATE monitor_module SET module_name = CASE module_url
+  WHEN 'https://www.nmefc.cn/zhyj/hljb/tfhljb' THEN '台风海浪警报'
+  WHEN 'https://www.nmefc.cn/zhyj/hljb/wdhljb' THEN '温带海浪警报'
+  WHEN 'https://www.nmefc.cn/zhyj/fbcjb/tffbcjb' THEN '台风风暴潮警报'
+  WHEN 'https://www.nmefc.cn/zhyj/fbcjb/wdfbcjb' THEN '温带风暴潮警报'
+  WHEN 'https://www.nmefc.cn/zhyj/hbjb' THEN '海冰警报'
+  WHEN 'https://www.nmefc.cn/zhyj/hx' THEN '海啸消息/警报'
+  ELSE module_name END
+WHERE module_url IN ('https://www.nmefc.cn/zhyj/hljb/tfhljb','https://www.nmefc.cn/zhyj/hljb/wdhljb','https://www.nmefc.cn/zhyj/fbcjb/tffbcjb','https://www.nmefc.cn/zhyj/fbcjb/wdfbcjb','https://www.nmefc.cn/zhyj/hbjb','https://www.nmefc.cn/zhyj/hx');
 INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '中国海洋预报网','https://www.oceanguide.org.cn/IndexHome','预报网站','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.oceanguide.org.cn/IndexHome');
 INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '国家海洋预报中心门户网站','https://www.nmefc.cn/','门户网站','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.nmefc.cn/');
 INSERT INTO monitor_site (site_name,site_url,site_type,status) SELECT '海洋灾害子场景','https://www.nmefc.cn/zhyj','灾害业务','UNKNOWN' WHERE NOT EXISTS (SELECT 1 FROM monitor_site WHERE site_url='https://www.nmefc.cn/zhyj');
