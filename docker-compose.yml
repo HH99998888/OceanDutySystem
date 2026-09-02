@@ -3,6 +3,12 @@ services:
     build: ./backend
     ports:
       - "8081:8081"
+    environment:
+      # 仅透传部署环境中的密钥；不在 compose 文件中保存真实连接信息。
+      OCEAN_ALARM_DB_ENABLED: ${OCEAN_ALARM_DB_ENABLED:-false}
+      OCEAN_ALARM_DB_URL: ${OCEAN_ALARM_DB_URL:-}
+      OCEAN_ALARM_DB_USERNAME: ${OCEAN_ALARM_DB_USERNAME:-}
+      OCEAN_ALARM_DB_PASSWORD: ${OCEAN_ALARM_DB_PASSWORD:-}
     volumes:
       - ocean-data:/app/data
   frontend:

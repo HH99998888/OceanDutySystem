@@ -17,3 +17,11 @@ mybatis-plus:
 logging:
   level:
     cn.nmefc: INFO
+
+# 灾害预警业务库：所有连接信息均由部署环境注入，严禁提交真实凭据。
+ocean:
+  alarm-db:
+    enabled: ${OCEAN_ALARM_DB_ENABLED:false}
+    url: ${OCEAN_ALARM_DB_URL:}
+    username: ${OCEAN_ALARM_DB_USERNAME:}
+    password: ${OCEAN_ALARM_DB_PASSWORD:}

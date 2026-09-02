@@ -15,3 +15,7 @@ docker compose up --build
 开发模式请分别进入 `backend` 与 `frontend` 目录，执行 `mvn spring-boot:run` 和 `npm install && npm run dev`。
 
 默认使用 SQLite 文件数据库，首次启动会创建数据表与演示监控配置。
+
+## 灾害预警 MySQL（可选）
+
+`cms_forecast_alarm` 使用独立只读连接。复制 `.env.example` 并在服务器的密钥管理服务、Docker Secret 或进程环境中设置 `OCEAN_ALARM_DB_*`；真实 IP、账号和密码不得写入仓库。接口 `GET /api/alarm-database/latest` 按 `type` 返回每类最新的 `alarm_date`、`title` 和 `code`。

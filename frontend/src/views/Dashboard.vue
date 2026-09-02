@@ -5,7 +5,8 @@ const data=ref({sites:[],modules:[],abnormalSites:[],abnormalModules:[]}), loadi
 const tagType=s=>({NORMAL:'success',WARNING:'warning',ABNORMAL:'danger',UNKNOWN:'info'}[s]||'info')
 const statusText=s=>({NORMAL:'正常',WARNING:'警告',ABNORMAL:'异常',UNKNOWN:'待检测'}[s]||s)
 const refresh=async()=>{loading.value=true;try{data.value=(await http.get('/dashboard')).data}finally{loading.value=false}}
-const check=async()=>{await Promise.all([http.post('/sites/check'),http.post('/modules/check')]);await refresh()}
+// 先刷新首页状态，再检查依赖该首页的业务模块。
+const check=async()=>{await http.post('/sites/check');await http.post('/modules/check');await refresh()}
 const healthy=computed(()=>data.value.sites.filter(s=>s.status!=='ABNORMAL'))
 onMounted(refresh)
 </script>

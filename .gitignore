@@ -1,42 +1,8 @@
-# Node / Vite
-node_modules/
-frontend/node_modules/
-dist/
-frontend/dist/
-.vite/
-
-# Java / Maven / Spring Boot
-target/
-backend/target/
-*.class
-*.jar
-*.war
-*.ear
-hs_err_pid*
-
-# Runtime data and logs
-*.log
-logs/
-*.sqlite
-*.sqlite3
-*.db
-
-# Environment and local configuration
+# 本地密钥与运行期数据库
 .env
 .env.*
-!.env.example
-application-local.yml
-application-local.yaml
-
-# IDE and editor files
-.idea/
-*.iml
-.vscode/
-.project
-.classpath
-.settings/
-
-# OS files
-.DS_Store
-Thumbs.db
-Desktop.ini
+!*.example
+backend/data/
+*.db
+frontend/node_modules/
+frontend/dist/
