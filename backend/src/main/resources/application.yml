@@ -31,3 +31,21 @@ ocean:
     url: ${OCEAN_ALARM_DB_URL:}
     username: ${OCEAN_ALARM_DB_USERNAME:}
     password: ${OCEAN_ALARM_DB_PASSWORD:}
+  grid-db:
+    enabled: ${OCEAN_GRID_DB_ENABLED:false}
+    url: ${OCEAN_GRID_DB_URL:}
+    username: ${OCEAN_GRID_DB_USERNAME:}
+    password: ${OCEAN_GRID_DB_PASSWORD:}
+  grid-ftp:
+    enabled: ${OCEAN_GRID_FTP_ENABLED:false}
+    host: ${OCEAN_GRID_FTP_HOST:}
+    port: ${OCEAN_GRID_FTP_PORT:21}
+    username: ${OCEAN_GRID_FTP_USERNAME:}
+    password: ${OCEAN_GRID_FTP_PASSWORD:}
+    output-directory: ${OCEAN_GRID_FTP_OUTPUT_DIRECTORY:/OutputData}
+    root-directory: ${OCEAN_GRID_FTP_ROOT_DIRECTORY:/}
+    wind-directory: ${OCEAN_GRID_FTP_WIND_DIRECTORY:wind}
+    wave-directory: ${OCEAN_GRID_FTP_WAVE_DIRECTORY:wave}
+    current-directory: ${OCEAN_GRID_FTP_CURRENT_DIRECTORY:current}
+    sst-directory: ${OCEAN_GRID_FTP_SST_DIRECTORY:sst}
+    tide-directory: ${OCEAN_GRID_FTP_TIDE_DIRECTORY:storm_tide}

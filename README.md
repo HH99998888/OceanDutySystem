@@ -22,4 +22,4 @@ docker compose up --build
 
 默认类型映射为：`wave`（海浪）、`storm`（风暴潮）、`bore`（海啸）、`ice`（海冰）。
 
-环境预报检查接口为 `GET /api/environment-forecasts/latest`：海区预报每日 15:30、近岸预报每日 09:00、周预报每周日 00:00、月预报每月首日 00:00 后，若未查到对应周期的新 `create_date` 即返回异常。
+环境预报检查接口为 `GET /api/environment-forecasts/latest`：海区预报每日 15:30、近岸预报每日 09:00、月预报每月首日 00:00 后，若未查到对应周期的新 `create_date` 即返回异常。
