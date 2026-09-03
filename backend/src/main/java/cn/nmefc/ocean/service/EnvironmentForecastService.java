@@ -13,6 +13,8 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +32,7 @@ public class EnvironmentForecastService {
             List<EnvironmentForecastItem> items = new ArrayList<>();
             items.add(checkDaily(connection, "海区预报", "SELECT MAX(create_date) FROM cms_forecast_area_firststage", now, LocalTime.of(15, 30)));
             items.add(checkDaily(connection, "近岸预报", "SELECT MAX(create_date) FROM cms_forecast_nearshoreseaarea", now, LocalTime.of(9, 0)));
+            items.add(checkPeriod(connection, "周预报", "SELECT MAX(create_date) FROM cms_article WHERE category_id=?", "1190087799167778816", now, now.toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)).atStartOfDay(), "每周日 00:00"));
             items.add(checkPeriod(connection, "月预报", "SELECT MAX(create_date) FROM cms_article WHERE category_id=?", "1190087852779372544", now, now.toLocalDate().withDayOfMonth(1).atStartOfDay(), "每月首日 00:00"));
             return new EnvironmentForecastResult(true, "查询成功", items);
         } catch (Exception exception) {

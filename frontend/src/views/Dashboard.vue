@@ -4,6 +4,7 @@ import http from '../api/http'
 
 const data = ref({ sites: [], modules: [], abnormalSites: [], abnormalModules: [] })
 const alarmData = ref({ available: false, message: '灾害预警数据库未配置', alarms: [] })
+const environmentData = ref({ available: false, message: '环境预报数据库未配置', forecasts: [] })
 const gridData = ref({ available: false, message: '智能网格数据库未配置', items: [] })
 const ftpData = ref({ available: false, message: '智能网格 FTP 未配置', items: [] })
 const loading = ref(false)
@@ -15,13 +16,15 @@ const healthyModules = computed(() => data.value.modules.filter(module => module
 const refresh = async () => {
   loading.value = true
   try {
-    const [dashboard, alarms, grids, files] = await Promise.all([http.get('/dashboard'), http.get('/alarm-database/latest'), http.get('/grid-data/latest'), http.get('/grid-files/latest')])
+    const [dashboard, alarms, environments, grids, files] = await Promise.all([http.get('/dashboard'), http.get('/alarm-database/latest'), http.get('/environment-forecasts/latest'), http.get('/grid-data/latest'), http.get('/grid-files/latest')])
     data.value = dashboard.data
     alarmData.value = alarms.data
+    environmentData.value = environments.data
     gridData.value = grids.data
     ftpData.value = files.data
   } catch {
     alarmData.value = { available: false, message: '无法读取灾害预警数据库', alarms: [] }
+    environmentData.value = { available: false, message: '无法读取环境预报数据库', forecasts: [] }
     gridData.value = { available: false, message: '无法读取智能网格数据库', items: [] }
     ftpData.value = { available: false, message: '无法读取智能网格 FTP', items: [] }
   } finally { loading.value = false }
@@ -42,6 +45,10 @@ onMounted(refresh)
     <h3>中国海洋预报网 · 灾害预警</h3>
     <el-row v-if="alarmData.available" :gutter="16"><el-col v-for="alarm in alarmData.alarms" :key="`${alarm.type}-${alarm.code}`" :xs="24" :sm="12" :lg="6"><el-card class="card"><div class="card-head"><b>{{ alarm.categoryName }}</b><el-tag type="success">已获取</el-tag></div><p>{{ alarm.title || '—' }}</p><small>编号：{{ alarm.code || '—' }}</small><br /><small>最新发布：{{ alarm.alarmDate || '—' }}</small></el-card></el-col></el-row>
     <el-empty v-else :description="alarmData.message" :image-size="54" />
+
+    <h3>中国海洋预报网 · 环境预报</h3>
+    <el-row v-if="environmentData.available" :gutter="16"><el-col v-for="forecast in environmentData.forecasts" :key="forecast.name" :xs="24" :sm="12" :lg="6"><el-card class="card"><div class="card-head"><b>{{ forecast.name }}</b><el-tag :type="tagType(forecast.status)">{{ statusText(forecast.status) }}</el-tag></div><p>最新创建：{{ forecast.latestCreateTime || '—' }}</p><small>{{ forecast.message }}</small></el-card></el-col></el-row>
+    <el-empty v-else :description="environmentData.message" :image-size="54" />
 
     <h3>中国海洋预报网 · 智能网格</h3>
     <el-row v-if="gridData.available" :gutter="16"><el-col v-for="grid in gridData.items" :key="grid.name" :xs="24" :sm="12" :lg="6"><el-card class="card"><div class="card-head"><b>{{ grid.name }}</b><el-tag :type="tagType(grid.status)">{{ statusText(grid.status) }}</el-tag></div><p>更新时间：{{ grid.latestUpdateTime || '—' }}</p><small>版本：{{ grid.version || '—' }}</small><br /><small>起报时间：{{ grid.reportDate || '未匹配' }}</small><br /><small>{{ grid.message }}</small></el-card></el-col></el-row>
