@@ -38,9 +38,9 @@ public class MonitoringService {
         long started = System.currentTimeMillis();
         try {
             HttpResponse<Void> response = client.send(HttpRequest.newBuilder(URI.create(site.getSiteUrl())).timeout(Duration.ofSeconds(20)).header("User-Agent", MONITOR_USER_AGENT).header("Accept", "text/html,application/xhtml+xml").GET().build(), HttpResponse.BodyHandlers.discarding());
-            site.setResponseTime(System.currentTimeMillis() - started); site.setStatus(response.statusCode() < 400 ? Status.NORMAL : Status.ABNORMAL);
+            site.setResponseTime(System.currentTimeMillis() - started); site.setHttpStatus(response.statusCode()); site.setStatus(response.statusCode() < 400 ? Status.NORMAL : Status.ABNORMAL);
             site.setErrorMessage(response.statusCode() < 400 ? null : "HTTP " + response.statusCode());
-        } catch (Exception e) { site.setStatus(Status.ABNORMAL); site.setResponseTime(System.currentTimeMillis() - started); site.setErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage()); log.warn("站点探测失败: {}", site.getSiteName(), e); }
+        } catch (Exception e) { site.setStatus(Status.ABNORMAL); site.setResponseTime(System.currentTimeMillis() - started); site.setHttpStatus(null); site.setErrorMessage(e.getClass().getSimpleName() + ": " + e.getMessage()); log.warn("站点探测失败: {}", site.getSiteName(), e); }
         site.setLastCheckTime(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))); siteMapper.updateById(site);
     }
     /**

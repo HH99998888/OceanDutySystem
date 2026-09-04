@@ -24,6 +24,7 @@ public class OceanDutyApplication {
         try {
             Files.createDirectories(Path.of("data"));
             try (Connection connection = DriverManager.getConnection("jdbc:sqlite:data/ocean-duty.db")) {
+                addColumnIfMissing(connection, "monitor_site", "http_status", "INTEGER");
                 addColumnIfMissing(connection, "monitor_module", "module_category", "TEXT");
                 addColumnIfMissing(connection, "monitor_module", "last_check_time", "TEXT");
                 addColumnIfMissing(connection, "duty_log", "module_summary", "TEXT");
