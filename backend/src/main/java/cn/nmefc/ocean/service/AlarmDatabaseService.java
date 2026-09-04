@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import java.util.Map;
 @Slf4j @Service @RequiredArgsConstructor
 public class AlarmDatabaseService {
     private final AlarmDatabaseProperties properties;
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public AlarmDatabaseResult latestAlarms() {
         if (!properties.isEnabled() || isBlank(properties.getUrl()) || isBlank(properties.getUsername()) || isBlank(properties.getPassword())) {
@@ -37,7 +40,7 @@ public class AlarmDatabaseService {
             int index = 1; for (String type : names.keySet()) statement.setString(index++, type);
             List<AlarmPublication> result = new ArrayList<>();
             try (ResultSet rows = statement.executeQuery()) {
-                while (rows.next()) result.add(new AlarmPublication(rows.getString("type"), names.get(rows.getString("type")), rows.getString("title"), rows.getString("code"), String.valueOf(rows.getTimestamp("alarm_date"))));
+                while (rows.next()) result.add(new AlarmPublication(rows.getString("type"), names.get(rows.getString("type")), rows.getString("title"), rows.getString("code"), formatTimestamp(rows.getTimestamp("alarm_date"))));
             }
             return new AlarmDatabaseResult(true, "查询成功", result);
         } catch (Exception exception) {
@@ -46,4 +49,5 @@ public class AlarmDatabaseService {
         }
     }
     private boolean isBlank(String value) { return value == null || value.isBlank(); }
+    private String formatTimestamp(Timestamp timestamp) { return timestamp == null ? null : timestamp.toLocalDateTime().format(DATE_TIME_FORMATTER); }
 }

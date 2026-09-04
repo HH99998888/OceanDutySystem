@@ -12,6 +12,7 @@ const tagType = status => ({ NORMAL: 'success', WARNING: 'warning', ABNORMAL: 'd
 const statusText = status => ({ NORMAL: '正常', WARNING: '警告', ABNORMAL: '异常', UNKNOWN: '待检测' }[status] || status)
 const healthy = computed(() => data.value.sites.filter(site => site.status !== 'ABNORMAL'))
 const healthyModules = computed(() => data.value.modules.filter(module => module.status !== 'ABNORMAL'))
+const ftpFor = name => ftpData.value.items.find(item => item.name === name)
 
 const refresh = async () => {
   loading.value = true
@@ -51,12 +52,8 @@ onMounted(refresh)
     <el-empty v-else :description="environmentData.message" :image-size="54" />
 
     <h3>中国海洋预报网 · 智能网格</h3>
-    <el-row v-if="gridData.available" :gutter="16"><el-col v-for="grid in gridData.items" :key="grid.name" :xs="24" :sm="12" :lg="6"><el-card class="card"><div class="card-head"><b>{{ grid.name }}</b><el-tag :type="tagType(grid.status)">{{ statusText(grid.status) }}</el-tag></div><p>更新时间：{{ grid.latestUpdateTime || '—' }}</p><small>版本：{{ grid.version || '—' }}</small><br /><small>起报时间：{{ grid.reportDate || '未匹配' }}</small><br /><small>{{ grid.message }}</small></el-card></el-col></el-row>
+    <el-row v-if="gridData.available" :gutter="16"><el-col v-for="grid in gridData.items" :key="grid.name" :xs="24" :sm="12" :lg="6"><el-card class="card grid-card"><div class="card-head"><b>{{ grid.name }}</b><el-tag :type="tagType(grid.status)">{{ statusText(grid.status) }}</el-tag></div><p>更新时间：{{ grid.latestUpdateTime || '—' }}</p><small>版本：{{ grid.version || '—' }}</small><br /><small>起报时间：{{ grid.reportDate || '未匹配' }}</small><br /><small>{{ grid.message }}</small><template v-if="ftpData.available && ftpFor(grid.name)"><p class="ftp-label">OutputData：{{ ftpFor(grid.name).outputData.startTime || '未识别' }}</p><small>文件：{{ ftpFor(grid.name).outputData.fileName || '未找到' }}</small><br /><small>修改：{{ ftpFor(grid.name).outputData.lastModifiedTime || '—' }}</small><p class="ftp-label">根目录：{{ ftpFor(grid.name).rootData.startTime || '未识别' }}</p><small>文件：{{ ftpFor(grid.name).rootData.fileName || '未找到' }}</small><br /><small>修改：{{ ftpFor(grid.name).rootData.lastModifiedTime || '—' }}</small></template><small v-else-if="!ftpData.available" class="ftp-hint">FTP：{{ ftpData.message }}</small></el-card></el-col></el-row>
     <el-empty v-else :description="gridData.message" :image-size="54" />
-
-    <h3>中国海洋预报网 · 智能网格 FTP 文件</h3>
-    <el-row v-if="ftpData.available" :gutter="16"><el-col v-for="ftp in ftpData.items" :key="ftp.name" :xs="24" :sm="12" :lg="6"><el-card class="card ftp-card"><div class="card-head"><b>{{ ftp.name }}</b><el-tag type="success">已获取</el-tag></div><p>OutputData 起报：{{ ftp.outputData.startTime || '未识别' }}</p><small>文件：{{ ftp.outputData.fileName || '未找到' }}</small><br /><small>修改时间：{{ ftp.outputData.lastModifiedTime || '—' }}</small><p>根目录起报：{{ ftp.rootData.startTime || '未识别' }}</p><small>文件：{{ ftp.rootData.fileName || '未找到' }}</small><br /><small>修改时间：{{ ftp.rootData.lastModifiedTime || '—' }}</small></el-card></el-col></el-row>
-    <el-empty v-else :description="ftpData.message" :image-size="54" />
 
     <h3>业务模块</h3>
     <el-row :gutter="16"><el-col v-for="item in healthyModules" :key="item.id" :xs="24" :sm="12" :lg="6"><el-card class="card"><div class="card-head"><b>{{ item.moduleName }}</b><el-tag :type="tagType(item.status)">{{ statusText(item.status) }}</el-tag></div><p>类别：{{ item.moduleCategory }}</p><p>最后更新时间：{{ item.updateTime || '待识别' }}</p><small>最近检查：{{ item.lastCheckTime || '待检查' }}</small></el-card></el-col></el-row>
@@ -64,5 +61,5 @@ onMounted(refresh)
 </template>
 
 <style scoped>
-.title-row,.card-head{display:flex;align-items:center;justify-content:space-between}.title-row p{color:#7a8491}.alert{margin-bottom:12px}.card{margin-bottom:16px;min-height:112px}.ftp-card{min-height:190px}.card p{margin:18px 0 8px;color:#405266}small{color:#8894a4;word-break:break-all}h3{margin:30px 0 14px}
+.title-row,.card-head{display:flex;align-items:center;justify-content:space-between}.title-row p{color:#7a8491}.alert{margin-bottom:12px}.card{margin-bottom:16px;min-height:112px}.grid-card{height:420px;overflow-y:auto}.card p{margin:18px 0 8px;color:#405266}.grid-card .ftp-label{margin:14px 0 4px;font-weight:600}small{color:#8894a4;word-break:break-all}.ftp-hint{display:block;margin-top:14px}h3{margin:30px 0 14px}
 </style>

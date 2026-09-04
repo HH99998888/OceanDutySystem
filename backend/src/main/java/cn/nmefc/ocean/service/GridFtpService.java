@@ -26,17 +26,25 @@ public class GridFtpService {
   private static final DateTimeFormatter DISPLAY_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
   private final GridFtpProperties properties;
   public GridFtpResult latestFiles() {
-    if (!properties.isEnabled() || blank(properties.getHost()) || blank(properties.getUsername()) || blank(properties.getPassword())) return new GridFtpResult(false, "智能网格 FTP 未配置", List.of());
+    String configurationIssue = configurationIssue();
+    if (configurationIssue != null) return new GridFtpResult(false, configurationIssue, List.of());
     FTPClient client = new FTPClient();
+    String stage = "连接";
     try {
-      client.setConnectTimeout(10_000); client.setDataTimeout(java.time.Duration.ofSeconds(20)); client.connect(properties.getHost(), properties.getPort());
-      if (!client.login(properties.getUsername(), properties.getPassword())) return new GridFtpResult(false, "FTP 登录失败", List.of());
+      client.setConnectTimeout(10_000); client.setDataTimeout(java.time.Duration.ofSeconds(20)); client.setControlEncoding("UTF-8"); client.connect(properties.getHost(), properties.getPort());
+      stage = "登录";
+      if (!client.login(properties.getUsername(), properties.getPassword())) return new GridFtpResult(false, "FTP 登录失败（响应码 " + client.getReplyCode() + "）", List.of());
       client.enterLocalPassiveMode(); client.setFileType(FTP.BINARY_FILE_TYPE);
+      stage = "读取目录";
       List<GridFtpItem> items = new ArrayList<>();
       items.add(readElement(client, "风", properties.getWindDirectory())); items.add(readElement(client, "海浪", properties.getWaveDirectory()));
       items.add(readElement(client, "海流", properties.getCurrentDirectory())); items.add(readElement(client, "海温", properties.getSstDirectory())); items.add(readElement(client, "天文潮", properties.getTideDirectory()));
       return new GridFtpResult(true, "查询成功", items);
-    } catch (Exception exception) { log.warn("智能网格 FTP 查询失败: {}", exception.getClass().getSimpleName()); return new GridFtpResult(false, "FTP 连接或目录查询失败，请检查部署环境配置", List.of()); }
+    } catch (Exception exception) {
+      String errorType = exception.getClass().getSimpleName();
+      log.warn("智能网格 FTP {}失败：异常类型={}, 响应码={}", stage, errorType, client.getReplyCode());
+      return new GridFtpResult(false, "FTP " + stage + "失败（网络异常：" + errorType + "，响应码 " + client.getReplyCode() + "）", List.of());
+    }
     finally { try { if (client.isConnected()) { client.logout(); client.disconnect(); } } catch (Exception ignored) { } }
   }
   private GridFtpItem readElement(FTPClient client, String name, String folder) throws Exception { return new GridFtpItem(name, latestFile(client, join(properties.getOutputDirectory(), folder)), latestFile(client, join(properties.getRootDirectory(), folder))); }
@@ -50,5 +58,12 @@ public class GridFtpService {
   private String extractStartTime(String filename) { String value = extractRawStartTime(filename); if (value == null) return null; try { return switch (value.length()) { case 8 -> value.substring(0,4)+"-"+value.substring(4,6)+"-"+value.substring(6,8); case 10 -> value.substring(0,4)+"-"+value.substring(4,6)+"-"+value.substring(6,8)+" "+value.substring(8,10)+":00"; case 12 -> value.substring(0,4)+"-"+value.substring(4,6)+"-"+value.substring(6,8)+" "+value.substring(8,10)+":"+value.substring(10,12); default -> value.substring(0,4)+"-"+value.substring(4,6)+"-"+value.substring(6,8)+" "+value.substring(8,10)+":"+value.substring(10,12)+":"+value.substring(12,14); }; } catch (Exception ignored) { return value; } }
   private String extractRawStartTime(String filename) { Matcher matcher = START_TIME.matcher(filename); String latest = null; while (matcher.find()) latest = matcher.group(1); return latest; }
   private String join(String left, String right) { return (left.endsWith("/") ? left.substring(0, left.length()-1) : left) + "/" + right; }
+  private String configurationIssue() {
+    if (!properties.isEnabled()) return "未启用 OCEAN_GRID_FTP_ENABLED（请设置为 true）";
+    if (blank(properties.getHost())) return "缺少 OCEAN_GRID_FTP_HOST";
+    if (blank(properties.getUsername())) return "缺少 OCEAN_GRID_FTP_USERNAME";
+    if (blank(properties.getPassword())) return "缺少 OCEAN_GRID_FTP_PASSWORD";
+    return null;
+  }
   private boolean blank(String value) { return value == null || value.isBlank(); }
 }
