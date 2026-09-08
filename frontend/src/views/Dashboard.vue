@@ -8,6 +8,8 @@ const environmentData = ref({ available: false, message: '环境预报数据库�
 const gridData = ref({ available: false, message: '智能网格数据库未配置', items: [] })
 const ftpData = ref({ available: false, message: '智能网格 FTP 未配置', items: [] })
 const loading = ref(false)
+const diagnosisVisible = ref(false)
+const diagnosisData = ref({})
 const tagType = status => ({ NORMAL: 'success', WARNING: 'warning', ABNORMAL: 'danger', UNKNOWN: 'info' }[status] || 'info')
 const statusText = status => ({ NORMAL: '正常', WARNING: '警告', ABNORMAL: '异常', UNKNOWN: '待检测' }[status] || status)
 const healthy = computed(() => data.value.sites.filter(site => site.status !== 'ABNORMAL'))
@@ -31,6 +33,12 @@ const refresh = async () => {
   } finally { loading.value = false }
 }
 const check = async () => { await http.post('/sites/check'); await http.post('/modules/check'); await refresh() }
+const diagnose = async module => {
+  diagnosisData.value = { moduleName: module.moduleName, loading: true }
+  diagnosisVisible.value = true
+  try { diagnosisData.value = { moduleName: module.moduleName, ...(await http.get(`/modules/${module.id}/diagnosis`)).data } }
+  catch { diagnosisData.value = { moduleName: module.moduleName, conclusion: '诊断信息暂时无法读取' } }
+}
 onMounted(refresh)
 </script>
 
@@ -38,7 +46,7 @@ onMounted(refresh)
   <div v-loading="loading">
     <section class="title-row"><div><h2>监控总览</h2><p>实时掌握网站可用性和预报产品更新时间</p></div><el-button type="primary" @click="check">立即检测</el-button></section>
     <el-alert v-for="site in data.abnormalSites" :key="site.id" type="error" :closable="false" show-icon class="alert" :title="`${site.siteName} 无法访问`" :description="`${site.errorMessage || '访问异常'} · ${site.lastCheckTime || '未检测'}`" />
-    <el-alert v-for="item in data.abnormalModules" :key="`module-${item.id}`" type="error" :closable="false" show-icon class="alert" :title="`${item.moduleName} 数据异常`" :description="`${item.remark || '模块访问异常'} · ${item.lastCheckTime || '未检测'}`" />
+    <el-alert v-for="item in data.abnormalModules" :key="`module-${item.id}`" type="error" :closable="false" show-icon class="alert" :title="`${item.moduleName} 数据异常`" :description="`${item.remark || '模块访问异常'} · ${item.lastCheckTime || '未检测'}`"><template #default><el-button link type="danger" @click="diagnose(item)">查看三级诊断</el-button></template></el-alert>
 
     <h3>网站监控</h3>
     <el-row :gutter="16"><el-col v-for="site in healthy" :key="site.id" :xs="24" :sm="12" :lg="8"><el-card class="card website-card"><div class="card-head"><b>{{ site.siteName }}</b><el-tag :type="tagType(site.status)">{{ statusText(site.status) }}</el-tag></div><div class="site-metrics"><div><span>响应时间</span><strong>{{ site.responseTime == null ? '—' : `${site.responseTime} ms` }}</strong></div><div><span>HTTP 状态码</span><strong>{{ site.httpStatus == null ? '—' : site.httpStatus }}</strong></div><div><span>检测时间</span><strong class="check-time">{{ site.lastCheckTime || '待检测' }}</strong></div></div></el-card></el-col></el-row>
@@ -57,6 +65,7 @@ onMounted(refresh)
 
     <h3>业务模块</h3>
     <el-row :gutter="16"><el-col v-for="item in healthyModules" :key="item.id" :xs="24" :sm="12" :lg="6"><el-card class="card"><div class="card-head"><b>{{ item.moduleName }}</b><el-tag :type="tagType(item.status)">{{ statusText(item.status) }}</el-tag></div><p>类别：{{ item.moduleCategory }}</p><p>最后更新时间：{{ item.updateTime || '待识别' }}</p><small>最近检查：{{ item.lastCheckTime || '待检查' }}</small></el-card></el-col></el-row>
+    <el-dialog v-model="diagnosisVisible" :title="`${diagnosisData.moduleName || '模块'} · 三级诊断`" width="min(620px, 92vw)"><el-skeleton v-if="diagnosisData.loading" :rows="3" animated /><template v-else><p><b>第一层：页面数据</b>：异常，已进入诊断流程。</p><p><b>第二层：业务数据库</b>：{{ diagnosisData.database || '未配置' }}</p><p><b>第三层：服务器数据目录</b>：{{ diagnosisData.serverFiles?.length ? `已获取 ${diagnosisData.serverFiles.length} 条检查记录` : '暂无目录检查记录' }}</p><p class="conclusion"><b>结论：</b>{{ diagnosisData.conclusion }}</p></template></el-dialog>
   </div>
 </template>
 

@@ -14,6 +14,11 @@ import cn.nmefc.ocean.service.GridFtpService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.*;
 
 @RestController @RequestMapping("/api") @RequiredArgsConstructor
@@ -31,4 +36,20 @@ public class MonitorController {
   @Operation(summary="智能网格 FTP 最新文件检查") @GetMapping("/grid-files/latest") public GridFtpResult latestGridFiles() { return gridFtpService.latestFiles(); }
   @GetMapping("/duty-logs") public List<DutyLog> logs() { return dutyLogMapper.selectList(null); }
   @PostMapping("/duty-logs") public DutyLog createLog(@RequestBody DutyLog log) { dutyLogMapper.insert(log); return log; }
+  /**
+   * 导出 UTF-8 BOM CSV，Excel 和微信内置预览均可正确识别中文。
+   * 日志内的换行、逗号和双引号会按 CSV 规范转义。
+   */
+  @GetMapping(value = "/duty-logs/export", produces = "text/csv")
+  public ResponseEntity<byte[]> exportLogs() {
+    StringBuilder csv = new StringBuilder("\uFEFF值班时间,值班人员,模块状态,问题,处理措施,恢复时间\r\n");
+    dutyLogMapper.selectList(null).forEach(log -> csv.append(csvCell(log.getDutyTime())).append(',')
+      .append(csvCell(log.getUserName())).append(',').append(csvCell(log.getModuleSummary())).append(',')
+      .append(csvCell(log.getProblem())).append(',').append(csvCell(log.getSolution())).append(',')
+      .append(csvCell(log.getRecoverTime())).append("\r\n"));
+    String filename = "duty-logs-" + LocalDate.now() + ".csv";
+    return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+      .contentType(new MediaType("text", "csv", StandardCharsets.UTF_8)).body(csv.toString().getBytes(StandardCharsets.UTF_8));
+  }
+  private String csvCell(String value) { return "\"" + (value == null ? "" : value.replace("\"", "\"\"")).replace("\r", " ").replace("\n", " ") + "\""; }
 }

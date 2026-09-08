@@ -2,6 +2,8 @@
 
 前后端分离的 MVP 骨架，面向海洋预报网站、业务模块更新时间和值班日志的日常监控。
 
+完整的一期架构、ER、接口、页面原型、Docker 方案和迭代计划见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
+
 ## 快速启动
 
 ```bash
